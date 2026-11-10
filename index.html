@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Helper</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f6fc;color:#243047}
+header{background:#174ea6;color:white;text-align:center;padding:28px 15px}
+.container{width:92%;max-width:750px;margin:25px auto}
+.card{background:white;padding:22px;margin-bottom:20px;border-radius:16px;box-shadow:0 3px 12px #00000010}
+h2{color:#174ea6;margin-top:0}
+.prices{display:grid;grid-template-columns:1fr;gap:14px}
+.price-card{background:#f5f8ff;padding:18px;border-radius:12px;text-align:center;border:1px solid #dce6f5}
+.price{color:#16a05a;font-size:27px;font-weight:bold}
+.friends{border:2px solid #16a05a;background:#effff4}
+label{display:block;margin:14px 0 7px;font-weight:bold}
+input,select{width:100%;padding:13px;border:1px solid #ccd3df;border-radius:9px;font-size:16px;background:white}
+.chapter-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.chapter{background:#f5f7fb;padding:11px;border-radius:8px}
+.chapter input{width:auto}
+button{width:100%;padding:14px;margin-top:15px;border:none;border-radius:10px;background:#174ea6;color:white;font-size:17px;cursor:pointer}
+.green{background:#16a05a}
+#result,#resultFriends{display:none;background:#effff4;border:2px solid #16a05a;padding:18px;border-radius:12px;margin-top:20px;line-height:2}
+.cash{background:#fff3cd;padding:14px;border-radius:10px;text-align:center;line-height:1.8}
+footer{text-align:center;padding:25px;color:#777}
+</style>
+</head>
+<body>
+<header><h1>📚 School Helper</h1><p>كل الشباتر في مكان واحد وبأسعار مناسبة</p></header>
+<div class="container">
+
+<section class="card"><h2>💰 أسعار الشباتر</h2>
+<div class="prices">
+<div class="price-card"><h3>📖 شابتر واحد</h3><div class="price">7.5 جنيه</div></div>
+<div class="price-card"><h3>📚 باقة 10 شباتر</h3><div class="price">35 جنيه</div><p>بدل 75 جنيه - وفر 40 جنيه</p></div>
+<div class="price-card friends"><h3>👥 عرض الصحاب</h3><div class="price">35 جنيه لكل طالب</div><p>10 شباتر لكل طالب - لطالبين أو أكثر</p></div>
+</div></section>
+
+<section class="card"><h2>📝 اطلب الشباتر العادية</h2>
+<label>اسم الطالب</label><input id="studentName" type="text" placeholder="اكتب اسمك">
+<label>كود الطالب</label><input id="studentCode" type="text" placeholder="اكتب كود الطالب">
+<label>رقم المعرف</label><input id="studentId" type="text" placeholder="اكتب رقم المعرف">
+<label>اختار المادة</label>
+<select id="subject"><option value="">اختار المادة</option><option>Java</option><option>Python</option><option>الثقافة المالية</option></select>
+<label>اختار نوع الطلب</label>
+<select id="offer" onchange="calculatePrice()"><option value="single">شابتر واحد أو أكثر - 7.5 جنيه للشابتر</option><option value="ten">باقة 10 شباتر - 35 جنيه</option></select>
+<label>اختار الشباتر</label><div class="chapter-list" id="chapterList"></div>
+<h3 id="priceText">السعر: 0 جنيه</h3>
+<div class="cash">💸 <b>الدفع فودافون كاش:</b><br>حول على <b style="font-size:20px">01012085122</b><br>وارفع سكرين شوت للتحويل</div>
+<label>ارفع سكرين شوت التحويل</label><input type="file">
+<button onclick="submitNormal()">تأكيد الطلب</button>
+<div id="result"></div>
+</section>
+
+<section class="card friends"><h2>👥 عرض الصحاب</h2>
+<p><b>10 شباتر بـ35 جنيه لكل طالب</b></p>
+<label>عدد الطلاب</label><input type="number" id="friendCount" min="2" max="20" value="2" oninput="makeFriendInputs()">
+<div id="friendInputs"></div>
+<label>المادة</label>
+<select id="friendSubject"><option value="">اختار المادة</option><option>Java</option><option>Python</option><option>الثقافة المالية</option></select>
+<p>كل طالب يحصل على 10 شباتر.</p>
+<h3 id="friendPrice">الإجمالي: 70 جنيه</h3>
+<div class="cash">💸 حول الإجمالي على <b>01012085122</b> فودافون كاش</div>
+<button class="green" onclick="submitFriends()">تأكيد عرض الصحاب</button>
+<div id="resultFriends"></div>
+</section>
+
+</div>
+<footer>School Helper © 2026 | الدفع فودافون كاش 01012085122</footer>
+
+<script>
+const chapterList=document.getElementById("chapterList");
+function makeChapters(){chapterList.innerHTML="";for(let i=1;i<=10;i++){chapterList.innerHTML+=`<label class="chapter"><input type="checkbox" value="${i}" onchange="calculatePrice()"> الشابتر ${i}</label>`}}
+function calculatePrice(){
+  const selected=document.querySelectorAll('#chapterList input:checked').length;
+  const offer=document.getElementById("offer").value;
+  let price=0;
+  if(offer==="single"){price=selected*7.5}else{price=selected===10?35:0}
+  document.getElementById("priceText").innerText="عدد الشباتر: "+selected+" | السعر: "+price+" جنيه";
+  return{selected,price};
+}
+function submitNormal(){
+  const name=document.getElementById("studentName").value.trim();
+  const code=document.getElementById("studentCode").value.trim();
+  const idNum=document.getElementById("studentId").value.trim();
+  const subject=document.getElementById("subject").value;
+  const offer=document.getElementById("offer").value;
+  const data=calculatePrice();
+  if(!name||!code||!idNum||!subject){alert("اكتب اسمك وكودك ورقم المعرف واختار المادة");return}
+  if(offer==="single"&&data.selected<1){alert("اختار شابتر واحد على الأقل");return}
+  if(offer==="ten"&&data.selected!==10){alert("باقة 10 شباتر لازم تختار العشرة كلهم");return}
+  const result=document.getElementById("result");result.style.display="block";
+  result.innerHTML=`<h3>✅ ملخص طلبك</h3>الاسم: ${name}<br>كود الطالب: ${code}<br>رقم المعرف: ${idNum}<br>المادة: ${subject}<br>عدد الشباتر: ${data.selected}<br>السعر: ${data.price} جنيه<br><b>حول ${data.price} جنيه على 01012085122 فودافون كاش</b><br><a href="https://wa.me/201012085122" target="_blank">📱 ابعت سكرين شوت على الواتساب</a>`;
+}
+function makeFriendInputs(){
+  let count=Number(document.getElementById("friendCount").value);
+  if(!Number.isInteger(count)||count<2||count>20){document.getElementById("friendInputs").innerHTML="عدد الطلاب من 2 لـ 20";return}
+  let html="";for(let i=1;i<=count;i++){html+=`<label>اسم الطالب ${i}</label><input class="friendName" placeholder="اسم الطالب ${i}"><label>كود الطالب ${i}</label><input class="friendCode" placeholder="كود الطالب ${i}"><label>رقم المعرف ${i}</label><input class="friendId" placeholder="رقم المعرف ${i}">`}
+  document.getElementById("friendInputs").innerHTML=html;
+  document.getElementById("friendPrice").innerText="الإجمالي: "+(count*35)+" جنيه";
+}
+function submitFriends(){
+  const count=Number(document.getElementById("friendCount").value);
+  const subject=document.getElementById("friendSubject").value;
+  const codes=[...document.querySelectorAll(".friendCode")].map(e=>e.value.trim());
+  if(!subject||codes.length!==count||codes.some(c=>!c)){alert("اكتب أكواد كل الطلاب واختار المادة");return}
+  const total=count*35;const result=document.getElementById("resultFriends");result.style.display="block";
+  result.innerHTML=`<h3>✅ ملخص عرض الصحاب</h3>المادة: ${subject}<br>عدد الطلاب: ${count}<br>السعر لكل طالب: 35 جنيه<br>الإجمالي: ${total} جنيه<br>أكواد الطلاب: ${codes.join(" - ")}<br><b>حول ${total} جنيه على 01012085122</b><br><a href="https://wa.me/201012085122" target="_blank">📱 ابعت سكرين شوت على الواتساب</a>`;
+}
+makeChapters();makeFriendInputs();
+</script>
+</body>
+</html>
